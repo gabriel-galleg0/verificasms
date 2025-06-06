@@ -12,6 +12,7 @@ import java.util.Optional;
  *
  * @author gabri
  */
+@Service
 public class MensagemService {
      private final MensagemRepository repository;
 
