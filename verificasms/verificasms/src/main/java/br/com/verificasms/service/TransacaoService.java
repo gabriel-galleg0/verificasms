@@ -25,11 +25,13 @@ public class TransacaoService {
     private UsuarioRepository usuarioRepository;
 
     public Transacao realizarTransacao(Long remetenteId, Long destinatarioId, Double valor) {
-        Usuario remetente = usuarioRepository.findById(remetenteId).orElseThrow();
-        Usuario destinatario = usuarioRepository.findById(destinatarioId).orElseThrow();
+        Usuario remetente = usuarioRepository.findById(remetenteId)
+                .orElseThrow(() -> new IllegalArgumentException("Remetente não encontrado: ID = " + remetenteId));
+        Usuario destinatario = usuarioRepository.findById(destinatarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Destinatário não encontrado: ID = " + destinatarioId));
 
         if (destinatario.isSuspeito()) {
-            // Aqui você pode enviar notificação (print, log ou serviço de notificação)
+           
             System.out.println("⚠️ Atenção: o destinatário tem denúncias registradas.");
         }
 

@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @author gabri
  */
 
-
 public interface FlagRepository extends JpaRepository<Flag, Long> {
 
 }
