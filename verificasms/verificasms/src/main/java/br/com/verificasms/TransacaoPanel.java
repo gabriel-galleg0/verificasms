@@ -3,6 +3,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
 package br.com.verificasms;
+import br.com.verificasms.model.Usuario;
+import javax.swing.JOptionPane;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.OutputStream;
+import java.util.Scanner;
+import javax.swing.JFrame;
 
 /**
  *
@@ -10,11 +17,34 @@ package br.com.verificasms;
  */
 public class TransacaoPanel extends javax.swing.JPanel {
 
-    /**
-     * Creates new form TransacaoPanel
-     */
-    public TransacaoPanel() {
-        initComponents();
+    private JFrame frame;
+
+    public TransacaoPanel(JFrame frame) {
+    this.frame = frame;
+    initComponents();
+}
+    
+    private Usuario buscarUsuarioPorId(Long id) {
+    try {
+        URL url = new URL("http://localhost:8080/usuarios/" + id);
+        HttpURLConnection conexao = (HttpURLConnection) url.openConnection();
+        conexao.setRequestMethod("GET");
+
+        if (conexao.getResponseCode() == 200) {
+            Scanner scanner = new Scanner(conexao.getInputStream());
+            String json = scanner.useDelimiter("\\A").next();
+            scanner.close();
+
+            Usuario u = new Usuario();
+            u.setId(Long.parseLong(json.split("\"id\":")[1].split(",")[0].trim()));
+            u.setNome(json.split("\"nome\":\"")[1].split("\"")[0]);
+            u.setEmail(json.split("\"email\":\"")[1].split("\"")[0]);
+            return u;
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return null;
     }
 
     /**
@@ -26,19 +56,119 @@ public class TransacaoPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        chaveField = new javax.swing.JTextField();
+        valorField = new javax.swing.JTextField();
+        alteraLabel = new javax.swing.JLabel();
+        btnEnviar = new javax.swing.JButton();
+
+        chaveField.setText("Chave Pix");
+        chaveField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chaveFieldActionPerformed(evt);
+            }
+        });
+
+        valorField.setText("Valor ");
+
+        alteraLabel.setText("Aguarde ");
+
+        btnEnviar.setText("Enviar");
+        btnEnviar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEnviarActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(56, 56, 56)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(alteraLabel)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(chaveField, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
+                        .addComponent(valorField)))
+                .addContainerGap(182, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnEnviar)
+                .addGap(32, 32, 32))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(57, 57, 57)
+                .addComponent(chaveField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(34, 34, 34)
+                .addComponent(valorField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(87, 87, 87)
+                .addComponent(alteraLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 180, Short.MAX_VALUE)
+                .addComponent(btnEnviar)
+                .addGap(47, 47, 47))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void chaveFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chaveFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_chaveFieldActionPerformed
+
+    private void btnEnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnviarActionPerformed
+          String chave = chaveField.getText().trim();
+    String valorStr = valorField.getText().trim();
+
+    try {
+        Long destinatarioId = Long.parseLong(chave);
+        Double valor = Double.parseDouble(valorStr);
+        Usuario usuarioLogado = Sessao.getUsuarioLogado();
+        Long remetenteId = usuarioLogado.getId();
+
+        String parametros = "remetenteId=" + remetenteId +
+                            "&destinatarioId=" + destinatarioId +
+                            "&valor=" + valor;
+
+        URL url = new URL("http://localhost:8080/transacoes");
+        HttpURLConnection conexao = (HttpURLConnection) url.openConnection();
+        conexao.setRequestMethod("POST");
+        conexao.setDoOutput(true);
+        conexao.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+
+        try (OutputStream os = conexao.getOutputStream()) {
+            os.write(parametros.getBytes("UTF-8"));
+        }
+
+        int status = conexao.getResponseCode();
+        if (status == 200) {
+            JOptionPane.showMessageDialog(this, "Transação realizada com sucesso!");
+            Usuario remetente = Sessao.getUsuarioLogado();
+
+    // Buscar destinatário pelo ID
+            Usuario destinatario = buscarUsuarioPorId(destinatarioId);
+        
+    // Mudar para tela do comprovante
+            frame.setContentPane(new ComprovantePanel(frame, remetente, destinatario));
+            frame.revalidate();
+            frame.repaint();
+        } else {
+            JOptionPane.showMessageDialog(this, "Erro na transação. Código: " + status);
+        }
+
+        conexao.disconnect();
+    } catch (NumberFormatException ex) {
+        JOptionPane.showMessageDialog(this, "Valor ou chave inválidos!");
+    } catch (Exception ex) {
+        ex.printStackTrace();
+        JOptionPane.showMessageDialog(this, "Erro ao conectar com a API: " + ex.getMessage());
+    }
+    }//GEN-LAST:event_btnEnviarActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel alteraLabel;
+    private javax.swing.JButton btnEnviar;
+    private javax.swing.JTextField chaveField;
+    private javax.swing.JTextField valorField;
     // End of variables declaration//GEN-END:variables
 }

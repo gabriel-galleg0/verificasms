@@ -14,12 +14,6 @@
 	<name>verificasms</name>
 	<description>Api de verificação de mensagens falsas</description>
 	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
 	<scm>
 		<connection/>
 		<developerConnection/>
@@ -58,12 +52,6 @@
 	  <groupId>ch.ascendise.validator</groupId>
 	  <artifactId>validator</artifactId>
 	  <version>1.0.0</version>
-	  <type>jar</type>
-	 </dependency>
-	 <dependency>
-	  <groupId>com.guicedee.services</groupId>
-	  <artifactId>jakarta.validation-api</artifactId>
-	  <version>1.2.2.1-jre17</version>
 	  <type>jar</type>
 	 </dependency>
 	</dependencies>

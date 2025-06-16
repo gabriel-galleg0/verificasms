@@ -25,6 +25,7 @@ public class Usuario {
         return flags != null && !flags.isEmpty();}
         
     public Long getId() { return id; }
+    public void setId(Long id){this.id = id;}
 
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
@@ -34,7 +35,6 @@ public class Usuario {
 
     public List<Flag> getFlags() { return flags; }
     public void setFlags(List<Flag> flags) { this.flags = flags; }
-
     
 }
 
