@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
  *
  * @author gabri
  */
+
 @Entity
 public class Flag {
     @Id
